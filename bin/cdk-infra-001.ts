@@ -5,6 +5,8 @@ import { NetworkingStack } from '../lib/networking-stack';
 import { DnsStack } from '../lib/dns-stack';
 import { MessagingStack } from '../lib/messaging-stack';
 import { StorageStack } from '../lib/storage-stack';
+import { EcrStack } from '../lib/ecr-stack';
+import { ClusterStack } from '../lib/cluster-stack';
 
 const app = new cdk.App();
 
@@ -29,3 +31,18 @@ const storage = new StorageStack(app, `StorageStack-${envName}`, {
   efsSecurityGroup: networking.efsSecurityGroup,
 });
 storage.addDependency(networking);
+
+const ecr = new EcrStack(app, `EcrStack-${envName}`, {
+  config,
+});
+
+const cluster = new ClusterStack(app, `ClusterStack-${envName}`, {
+  config,
+  vpc: networking.vpc,
+  postgresSecurityGroup: networking.postgresSecurityGroup,
+  fileSystem: storage.fileSystem,
+  efsAccessPoint: storage.efsAccessPoint,
+  postgresSecret: storage.postgresSecret,
+});
+cluster.addDependency(networking);
+cluster.addDependency(storage);
