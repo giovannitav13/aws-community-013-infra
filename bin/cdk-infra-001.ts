@@ -3,6 +3,7 @@ import * as cdk from 'aws-cdk-lib/core';
 import { getConfig, Environment } from '../lib/config';
 import { NetworkingStack } from '../lib/networking-stack';
 import { DnsStack } from '../lib/dns-stack';
+import { MessagingStack } from '../lib/messaging-stack';
 
 const app = new cdk.App();
 
@@ -14,5 +15,9 @@ const networking = new NetworkingStack(app, `NetworkingStack-${envName}`, {
 });
 
 const dns = new DnsStack(app, `DnsStack-${envName}`, {
+  config,
+});
+
+const messaging = new MessagingStack(app, `MessagingStack-${envName}`, {
   config,
 });
