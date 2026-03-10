@@ -5,6 +5,7 @@ import { NetworkingStack } from '../lib/networking-stack';
 import { DnsStack } from '../lib/dns-stack';
 import { MessagingStack } from '../lib/messaging-stack';
 import { StorageStack } from '../lib/storage-stack';
+import { EcrStack } from '../lib/ecr-stack';
 
 const app = new cdk.App();
 
@@ -29,3 +30,7 @@ const storage = new StorageStack(app, `StorageStack-${envName}`, {
   efsSecurityGroup: networking.efsSecurityGroup,
 });
 storage.addDependency(networking);
+
+const ecr = new EcrStack(app, `EcrStack-${envName}`, {
+  config,
+});
