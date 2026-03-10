@@ -4,7 +4,8 @@
       "Bash(npx cdk:*)",
       "Bash(mv prompt.md /tmp/prompt.md && npx cdk init app --language typescript 2>&1 && mv /tmp/prompt.md .)",
       "Bash(npx tsc:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ]
   }
 }
