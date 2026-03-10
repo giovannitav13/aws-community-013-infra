@@ -3,6 +3,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
@@ -18,11 +19,10 @@ interface ServicesStackProps extends cdk.StackProps {
   sqsBeta: sqs.IQueue;
   postgresSecret: secretsmanager.ISecret;
   apiKeySecret: secretsmanager.ISecret;
+  httpsListener: elbv2.ApplicationListener;
 }
 
 export class ServicesStack extends cdk.Stack {
-  public readonly serviceA: ecs.FargateService;
-  public readonly serviceC: ecs.FargateService;
 
   constructor(scope: Construct, id: string, props: ServicesStackProps) {
     super(scope, id, props);
@@ -66,7 +66,7 @@ export class ServicesStack extends cdk.Stack {
     props.postgresSecret.grantRead(taskDefA.taskRole);
     props.apiKeySecret.grantRead(taskDefA.taskRole);
 
-    this.serviceA = new ecs.FargateService(this, 'ServiceA', {
+    const serviceA = new ecs.FargateService(this, 'ServiceA', {
       serviceName: `service-a-${env}-fargate`,
       cluster: props.cluster,
       taskDefinition: taskDefA,
@@ -178,7 +178,7 @@ export class ServicesStack extends cdk.Stack {
     props.postgresSecret.grantRead(taskDefC.taskRole);
     props.apiKeySecret.grantRead(taskDefC.taskRole);
 
-    this.serviceC = new ecs.FargateService(this, 'ServiceC', {
+    const serviceC = new ecs.FargateService(this, 'ServiceC', {
       serviceName: `service-c-${env}-fargate`,
       cluster: props.cluster,
       taskDefinition: taskDefC,
@@ -195,6 +195,37 @@ export class ServicesStack extends cdk.Stack {
         ],
       },
       enableExecuteCommand: true,
+    });
+
+    // --- ALB Target Groups ---
+    // Registered here to avoid cyclic dependency between AlbStack and ServicesStack
+
+    // Target Group Service A: /api/service-a/*
+    props.httpsListener.addTargets('TgServiceA', {
+      targetGroupName: `tg-service-a-${env}`,
+      port: 80,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targets: [serviceA],
+      healthCheck: {
+        path: '/',
+        healthyHttpCodes: '200',
+      },
+      priority: 10,
+      conditions: [elbv2.ListenerCondition.pathPatterns(['/api/service-a/*'])],
+    });
+
+    // Target Group Service C: /api/service-c/*
+    props.httpsListener.addTargets('TgServiceC', {
+      targetGroupName: `tg-service-c-${env}`,
+      port: 80,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targets: [serviceC],
+      healthCheck: {
+        path: '/',
+        healthyHttpCodes: '200',
+      },
+      priority: 20,
+      conditions: [elbv2.ListenerCondition.pathPatterns(['/api/service-c/*'])],
     });
 
     cdk.Tags.of(this).add('Project', `Infra001-Services-${env}`);

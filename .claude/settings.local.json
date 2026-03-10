@@ -6,7 +6,10 @@
       "Bash(npx tsc:*)",
       "Bash(git add:*)",
       "Bash(git push:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(aws cloudformation:*)",
+      "Bash(aws ecs:*)",
+      "Bash(curl -sk https://nuova-app-be.dev-tool.click/ 2>&1)"
     ]
   }
 }

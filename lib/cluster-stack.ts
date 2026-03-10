@@ -93,7 +93,7 @@ export class ClusterStack extends cdk.Stack {
       readOnly: false,
     });
 
-    new ecs.FargateService(this, 'PostgresService', {
+    const postgresService = new ecs.FargateService(this, 'PostgresService', {
       serviceName: `postgres-${env}-service`,
       cluster: this.cluster,
       taskDefinition: postgresTaskDef,
@@ -111,6 +111,9 @@ export class ClusterStack extends cdk.Stack {
       },
       enableExecuteCommand: true,
     });
+
+    // Ensure the Cloud Map namespace is fully created before the service
+    postgresService.node.addDependency(this.cluster);
 
     cdk.Tags.of(this).add('Project', `Infra001-Cluster-${env}`);
   }

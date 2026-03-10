@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib/core';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
@@ -14,11 +13,11 @@ interface AlbStackProps extends cdk.StackProps {
   albSecurityGroup: ec2.ISecurityGroup;
   hostedZone: route53.IHostedZone;
   certificate: acm.ICertificate;
-  serviceA: ecs.FargateService;
-  serviceC: ecs.FargateService;
 }
 
 export class AlbStack extends cdk.Stack {
+  public readonly httpsListener: elbv2.ApplicationListener;
+
   constructor(scope: Construct, id: string, props: AlbStackProps) {
     super(scope, id, props);
 
@@ -45,51 +44,13 @@ export class AlbStack extends cdk.Stack {
     });
 
     // HTTPS listener
-    const httpsListener = alb.addListener('HttpsListener', {
+    this.httpsListener = alb.addListener('HttpsListener', {
       port: 443,
       certificates: [props.certificate],
       defaultAction: elbv2.ListenerAction.fixedResponse(404, {
         contentType: 'text/plain',
         messageBody: 'Not Found',
       }),
-    });
-
-    // Target Group Service A: /api/service-a/*
-    const tgA = new elbv2.ApplicationTargetGroup(this, 'TgServiceA', {
-      targetGroupName: `tg-service-a-${env}`,
-      vpc: props.vpc,
-      port: 80,
-      protocol: elbv2.ApplicationProtocol.HTTP,
-      targets: [props.serviceA],
-      healthCheck: {
-        path: '/',
-        healthyHttpCodes: '200',
-      },
-    });
-
-    httpsListener.addTargetGroups('ServiceARule', {
-      targetGroups: [tgA],
-      priority: 10,
-      conditions: [elbv2.ListenerCondition.pathPatterns(['/api/service-a/*'])],
-    });
-
-    // Target Group Service C: /api/service-c/*
-    const tgC = new elbv2.ApplicationTargetGroup(this, 'TgServiceC', {
-      targetGroupName: `tg-service-c-${env}`,
-      vpc: props.vpc,
-      port: 80,
-      protocol: elbv2.ApplicationProtocol.HTTP,
-      targets: [props.serviceC],
-      healthCheck: {
-        path: '/',
-        healthyHttpCodes: '200',
-      },
-    });
-
-    httpsListener.addTargetGroups('ServiceCRule', {
-      targetGroups: [tgC],
-      priority: 20,
-      conditions: [elbv2.ListenerCondition.pathPatterns(['/api/service-c/*'])],
     });
 
     // Route53 A record -> ALB

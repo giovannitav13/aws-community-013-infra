@@ -61,6 +61,17 @@ const cluster = new ClusterStack(app, `ClusterStack-${envName}`, {
 cluster.addDependency(networking);
 cluster.addDependency(storage);
 
+const albStack = new AlbStack(app, `AlbStack-${envName}`, {
+  config,
+  vpc: networking.vpc,
+  albSecurityGroup: networking.albSecurityGroup,
+  hostedZone: dns.hostedZone,
+  certificate: dns.backendCertificate,
+  env: awsEnv,
+});
+albStack.addDependency(networking);
+albStack.addDependency(dns);
+
 const services = new ServicesStack(app, `ServicesStack-${envName}`, {
   config,
   vpc: networking.vpc,
@@ -71,11 +82,13 @@ const services = new ServicesStack(app, `ServicesStack-${envName}`, {
   sqsBeta: messaging.sqsBeta,
   postgresSecret: storage.postgresSecret,
   apiKeySecret: storage.apiKeySecret,
+  httpsListener: albStack.httpsListener,
   env: awsEnv,
 });
 services.addDependency(cluster);
 services.addDependency(messaging);
 services.addDependency(storage);
+services.addDependency(albStack);
 
 const frontend = new FrontendStack(app, `FrontendStack-${envName}`, {
   config,
@@ -84,17 +97,3 @@ const frontend = new FrontendStack(app, `FrontendStack-${envName}`, {
   env: awsEnv,
 });
 frontend.addDependency(dns);
-
-const albStack = new AlbStack(app, `AlbStack-${envName}`, {
-  config,
-  vpc: networking.vpc,
-  albSecurityGroup: networking.albSecurityGroup,
-  hostedZone: dns.hostedZone,
-  certificate: dns.backendCertificate,
-  serviceA: services.serviceA,
-  serviceC: services.serviceC,
-  env: awsEnv,
-});
-albStack.addDependency(networking);
-albStack.addDependency(dns);
-albStack.addDependency(services);
