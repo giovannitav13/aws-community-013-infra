@@ -4,6 +4,7 @@ import { getConfig, Environment } from '../lib/config';
 import { NetworkingStack } from '../lib/networking-stack';
 import { DnsStack } from '../lib/dns-stack';
 import { MessagingStack } from '../lib/messaging-stack';
+import { StorageStack } from '../lib/storage-stack';
 
 const app = new cdk.App();
 
@@ -21,3 +22,10 @@ const dns = new DnsStack(app, `DnsStack-${envName}`, {
 const messaging = new MessagingStack(app, `MessagingStack-${envName}`, {
   config,
 });
+
+const storage = new StorageStack(app, `StorageStack-${envName}`, {
+  config,
+  vpc: networking.vpc,
+  efsSecurityGroup: networking.efsSecurityGroup,
+});
+storage.addDependency(networking);
