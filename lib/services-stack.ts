@@ -29,7 +29,7 @@ export class ServicesStack extends cdk.Stack {
 
     const { env } = props.config;
 
-    // --- Service A ---
+    // --- Service A (Spring Boot, port 8080) ---
     // Public (ALB), publishes to SNS, calls Service B via Service Connect
     const taskDefA = new ecs.FargateTaskDefinition(this, 'TaskDefA', {
       family: `service-a-${env}-task`,
@@ -45,23 +45,26 @@ export class ServicesStack extends cdk.Stack {
         logRetention: logs.RetentionDays.ONE_WEEK,
       }),
       secrets: {
-        POSTGRES_SECRET: ecs.Secret.fromSecretsManager(props.postgresSecret),
+        DB_USERNAME: ecs.Secret.fromSecretsManager(props.postgresSecret, 'username'),
+        DB_PASSWORD: ecs.Secret.fromSecretsManager(props.postgresSecret, 'password'),
         API_KEY: ecs.Secret.fromSecretsManager(props.apiKeySecret),
       },
       environment: {
+        DB_URL: 'jdbc:postgresql://postgres:5432/postgres',
+        SNS_TOPIC_ARN: props.topic.topicArn,
+        SERVICE_B_URL: 'http://service-b:8000',
         SERVICE_NAME: 'service-a',
         ENV: env,
       },
       portMappings: [
         {
-          containerPort: 80,
+          containerPort: 8080,
           name: 'service-a',
           appProtocol: ecs.AppProtocol.http,
         },
       ],
     });
 
-    // IAM: SNS publish, Secrets Manager read
     props.topic.grantPublish(taskDefA.taskRole);
     props.postgresSecret.grantRead(taskDefA.taskRole);
     props.apiKeySecret.grantRead(taskDefA.taskRole);
@@ -78,14 +81,14 @@ export class ServicesStack extends cdk.Stack {
           {
             portMappingName: 'service-a',
             dnsName: 'service-a',
-            port: 80,
+            port: 8080,
           },
         ],
       },
       enableExecuteCommand: true,
     });
 
-    // --- Service B ---
+    // --- Service B (FastAPI, port 8000) ---
     // Internal only (Service Connect), consumes SQS-alfa
     const taskDefB = new ecs.FargateTaskDefinition(this, 'TaskDefB', {
       family: `service-b-${env}-task`,
@@ -101,23 +104,27 @@ export class ServicesStack extends cdk.Stack {
         logRetention: logs.RetentionDays.ONE_WEEK,
       }),
       secrets: {
-        POSTGRES_SECRET: ecs.Secret.fromSecretsManager(props.postgresSecret),
+        DB_USERNAME: ecs.Secret.fromSecretsManager(props.postgresSecret, 'username'),
+        DB_PASSWORD: ecs.Secret.fromSecretsManager(props.postgresSecret, 'password'),
         API_KEY: ecs.Secret.fromSecretsManager(props.apiKeySecret),
       },
       environment: {
+        DB_HOST: 'postgres',
+        DB_PORT: '5432',
+        DB_NAME: 'postgres',
+        SQS_ALFA_URL: props.sqsAlfa.queueUrl,
         SERVICE_NAME: 'service-b',
         ENV: env,
       },
       portMappings: [
         {
-          containerPort: 80,
+          containerPort: 8000,
           name: 'service-b',
           appProtocol: ecs.AppProtocol.http,
         },
       ],
     });
 
-    // IAM: SQS consume, Secrets Manager read
     props.sqsAlfa.grantConsumeMessages(taskDefB.taskRole);
     props.postgresSecret.grantRead(taskDefB.taskRole);
     props.apiKeySecret.grantRead(taskDefB.taskRole);
@@ -134,14 +141,14 @@ export class ServicesStack extends cdk.Stack {
           {
             portMappingName: 'service-b',
             dnsName: 'service-b',
-            port: 80,
+            port: 8000,
           },
         ],
       },
       enableExecuteCommand: true,
     });
 
-    // --- Service C ---
+    // --- Service C (Spring Boot, port 8080) ---
     // Public (ALB), consumes SQS-beta
     const taskDefC = new ecs.FargateTaskDefinition(this, 'TaskDefC', {
       family: `service-c-${env}-task`,
@@ -157,23 +164,25 @@ export class ServicesStack extends cdk.Stack {
         logRetention: logs.RetentionDays.ONE_WEEK,
       }),
       secrets: {
-        POSTGRES_SECRET: ecs.Secret.fromSecretsManager(props.postgresSecret),
+        DB_USERNAME: ecs.Secret.fromSecretsManager(props.postgresSecret, 'username'),
+        DB_PASSWORD: ecs.Secret.fromSecretsManager(props.postgresSecret, 'password'),
         API_KEY: ecs.Secret.fromSecretsManager(props.apiKeySecret),
       },
       environment: {
+        DB_URL: 'jdbc:postgresql://postgres:5432/postgres',
+        SQS_BETA_URL: props.sqsBeta.queueUrl,
         SERVICE_NAME: 'service-c',
         ENV: env,
       },
       portMappings: [
         {
-          containerPort: 80,
+          containerPort: 8080,
           name: 'service-c',
           appProtocol: ecs.AppProtocol.http,
         },
       ],
     });
 
-    // IAM: SQS consume, Secrets Manager read
     props.sqsBeta.grantConsumeMessages(taskDefC.taskRole);
     props.postgresSecret.grantRead(taskDefC.taskRole);
     props.apiKeySecret.grantRead(taskDefC.taskRole);
@@ -190,7 +199,7 @@ export class ServicesStack extends cdk.Stack {
           {
             portMappingName: 'service-c',
             dnsName: 'service-c',
-            port: 80,
+            port: 8080,
           },
         ],
       },
@@ -200,29 +209,29 @@ export class ServicesStack extends cdk.Stack {
     // --- ALB Target Groups ---
     // Registered here to avoid cyclic dependency between AlbStack and ServicesStack
 
-    // Target Group Service A: /api/service-a/*
     props.httpsListener.addTargets('TgServiceA', {
       targetGroupName: `tg-service-a-${env}`,
-      port: 80,
+      port: 8080,
       protocol: elbv2.ApplicationProtocol.HTTP,
       targets: [serviceA],
       healthCheck: {
-        path: '/',
+        path: '/api/service-a/ultimi-numeri',
         healthyHttpCodes: '200',
+        port: '8080',
       },
       priority: 10,
       conditions: [elbv2.ListenerCondition.pathPatterns(['/api/service-a/*'])],
     });
 
-    // Target Group Service C: /api/service-c/*
     props.httpsListener.addTargets('TgServiceC', {
       targetGroupName: `tg-service-c-${env}`,
-      port: 80,
+      port: 8080,
       protocol: elbv2.ApplicationProtocol.HTTP,
       targets: [serviceC],
       healthCheck: {
-        path: '/',
+        path: '/api/service-c/health',
         healthyHttpCodes: '200',
+        port: '8080',
       },
       priority: 20,
       conditions: [elbv2.ListenerCondition.pathPatterns(['/api/service-c/*'])],

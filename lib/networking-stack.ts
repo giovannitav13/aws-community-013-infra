@@ -56,7 +56,7 @@ export class NetworkingStack extends cdk.Stack {
       'Allow HTTP from internet (redirect to HTTPS)',
     );
 
-    // Security Group: Fargate services
+    // Security Group: Fargate services (private group cluster)
     this.servicesSecurityGroup = new ec2.SecurityGroup(this, 'ServicesSg', {
       securityGroupName: `services-${env}-sg`,
       vpc: this.vpc,
@@ -65,8 +65,8 @@ export class NetworkingStack extends cdk.Stack {
     });
     this.servicesSecurityGroup.addIngressRule(
       this.albSecurityGroup,
-      ec2.Port.tcp(80),
-      'Allow traffic from ALB',
+      ec2.Port.tcp(8080),
+      'Allow traffic from ALB on port 8080',
     );
     // Allow service-to-service communication via Service Connect
     this.servicesSecurityGroup.addIngressRule(
