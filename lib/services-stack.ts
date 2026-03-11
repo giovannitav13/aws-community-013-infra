@@ -210,7 +210,6 @@ export class ServicesStack extends cdk.Stack {
     // Registered here to avoid cyclic dependency between AlbStack and ServicesStack
 
     props.httpsListener.addTargets('TgServiceA', {
-      targetGroupName: `tg-service-a-${env}`,
       port: 8080,
       protocol: elbv2.ApplicationProtocol.HTTP,
       targets: [serviceA],
@@ -224,7 +223,6 @@ export class ServicesStack extends cdk.Stack {
     });
 
     props.httpsListener.addTargets('TgServiceC', {
-      targetGroupName: `tg-service-c-${env}`,
       port: 8080,
       protocol: elbv2.ApplicationProtocol.HTTP,
       targets: [serviceC],
