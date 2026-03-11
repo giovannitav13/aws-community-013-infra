@@ -19,7 +19,8 @@
       "Bash(aws logs:*)",
       "Bash(cd /Users/giovannitavella/Desktop/PersonalProject/cdk-proof/microservice/service-b && docker build --no-cache -t service-b . 2>&1)",
       "Bash(docker tag:*)",
-      "Bash(kill 71403 2>/dev/null; sleep 2; npx cdk deploy ServicesStack-DEV --context env=DEV --require-approval never 2>&1)"
+      "Bash(kill 71403 2>/dev/null; sleep 2; npx cdk deploy ServicesStack-DEV --context env=DEV --require-approval never 2>&1)",
+      "Bash(aws secretsmanager:*)"
     ]
   }
 }

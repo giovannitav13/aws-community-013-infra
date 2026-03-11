@@ -82,7 +82,6 @@ export class ClusterStack extends cdk.Stack {
         {
           containerPort: 5432,
           name: 'postgres',
-          appProtocol: ecs.AppProtocol.http,
         },
       ],
     });
