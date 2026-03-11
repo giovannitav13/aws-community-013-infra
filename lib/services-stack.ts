@@ -77,7 +77,7 @@ export class ServicesStack extends cdk.Stack {
       serviceName: `service-a-${env}-fargate`,
       cluster: props.cluster,
       taskDefinition: taskDefA,
-      desiredCount: 1,
+      desiredCount: 0,
       securityGroups: [props.servicesSecurityGroup],
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       serviceConnectConfiguration: {
@@ -136,7 +136,7 @@ export class ServicesStack extends cdk.Stack {
       serviceName: `service-b-${env}-fargate`,
       cluster: props.cluster,
       taskDefinition: taskDefB,
-      desiredCount: 1,
+      desiredCount: 0,
       securityGroups: [props.servicesSecurityGroup],
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       serviceConnectConfiguration: {
@@ -195,7 +195,7 @@ export class ServicesStack extends cdk.Stack {
       serviceName: `service-c-${env}-fargate`,
       cluster: props.cluster,
       taskDefinition: taskDefC,
-      desiredCount: 1,
+      desiredCount: 0,
       securityGroups: [props.servicesSecurityGroup],
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       serviceConnectConfiguration: {
