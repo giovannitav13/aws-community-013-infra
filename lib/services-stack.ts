@@ -54,7 +54,7 @@ export class ServicesStack extends cdk.Stack {
         API_KEY: ecs.Secret.fromSecretsManager(props.apiKeySecret),
       },
       environment: {
-        DB_URL: 'jdbc:postgresql://postgres:5432/postgres',
+        DB_URL: 'jdbc:postgresql://postgres:5432/postgres?sslmode=disable',
         SNS_TOPIC_ARN: props.topic.topicArn,
         SERVICE_B_URL: 'http://service-b:8000',
         SERVICE_NAME: 'service-a',
@@ -113,9 +113,7 @@ export class ServicesStack extends cdk.Stack {
         API_KEY: ecs.Secret.fromSecretsManager(props.apiKeySecret),
       },
       environment: {
-        DB_HOST: 'postgres',
-        DB_PORT: '5432',
-        DB_NAME: 'postgres',
+        DB_URL: 'postgresql://postgres:5432/postgres?sslmode=disable',
         SQS_ALFA_URL: props.sqsAlfa.queueUrl,
         SERVICE_NAME: 'service-b',
         ENV: env,
@@ -173,7 +171,7 @@ export class ServicesStack extends cdk.Stack {
         API_KEY: ecs.Secret.fromSecretsManager(props.apiKeySecret),
       },
       environment: {
-        DB_URL: 'jdbc:postgresql://postgres:5432/postgres',
+        DB_URL: 'jdbc:postgresql://postgres:5432/postgres?sslmode=disable',
         SQS_BETA_URL: props.sqsBeta.queueUrl,
         SERVICE_NAME: 'service-c',
         ENV: env,
