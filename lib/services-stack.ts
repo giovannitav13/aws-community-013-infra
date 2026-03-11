@@ -89,6 +89,7 @@ export class ServicesStack extends cdk.Stack {
           },
         ],
       },
+      circuitBreaker: { enable: true, rollback: true },
       enableExecuteCommand: true,
     });
 
@@ -147,6 +148,7 @@ export class ServicesStack extends cdk.Stack {
           },
         ],
       },
+      circuitBreaker: { enable: true, rollback: true },
       enableExecuteCommand: true,
     });
 
@@ -205,6 +207,7 @@ export class ServicesStack extends cdk.Stack {
           },
         ],
       },
+      circuitBreaker: { enable: true, rollback: true },
       enableExecuteCommand: true,
     });
 
