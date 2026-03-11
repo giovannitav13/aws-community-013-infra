@@ -83,12 +83,16 @@ const services = new ServicesStack(app, `ServicesStack-${envName}`, {
   postgresSecret: storage.postgresSecret,
   apiKeySecret: storage.apiKeySecret,
   httpsListener: albStack.httpsListener,
+  repoServiceA: ecr.repoServiceA,
+  repoServiceB: ecr.repoServiceB,
+  repoServiceC: ecr.repoServiceC,
   env: awsEnv,
 });
 services.addDependency(cluster);
 services.addDependency(messaging);
 services.addDependency(storage);
 services.addDependency(albStack);
+services.addDependency(ecr);
 
 const frontend = new FrontendStack(app, `FrontendStack-${envName}`, {
   config,

@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib/core';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
@@ -20,6 +21,9 @@ interface ServicesStackProps extends cdk.StackProps {
   postgresSecret: secretsmanager.ISecret;
   apiKeySecret: secretsmanager.ISecret;
   httpsListener: elbv2.ApplicationListener;
+  repoServiceA: ecr.IRepository;
+  repoServiceB: ecr.IRepository;
+  repoServiceC: ecr.IRepository;
 }
 
 export class ServicesStack extends cdk.Stack {
@@ -39,7 +43,7 @@ export class ServicesStack extends cdk.Stack {
 
     taskDefA.addContainer('app', {
       containerName: `service-a-${env}`,
-      image: ecs.ContainerImage.fromRegistry('nginx'),
+      image: ecs.ContainerImage.fromEcrRepository(props.repoServiceA, 'latest'),
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: `service-a-${env}`,
         logRetention: logs.RetentionDays.ONE_WEEK,
@@ -98,7 +102,7 @@ export class ServicesStack extends cdk.Stack {
 
     taskDefB.addContainer('app', {
       containerName: `service-b-${env}`,
-      image: ecs.ContainerImage.fromRegistry('nginx'),
+      image: ecs.ContainerImage.fromEcrRepository(props.repoServiceB, 'latest'),
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: `service-b-${env}`,
         logRetention: logs.RetentionDays.ONE_WEEK,
@@ -158,7 +162,7 @@ export class ServicesStack extends cdk.Stack {
 
     taskDefC.addContainer('app', {
       containerName: `service-c-${env}`,
-      image: ecs.ContainerImage.fromRegistry('nginx'),
+      image: ecs.ContainerImage.fromEcrRepository(props.repoServiceC, 'latest'),
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: `service-c-${env}`,
         logRetention: logs.RetentionDays.ONE_WEEK,
