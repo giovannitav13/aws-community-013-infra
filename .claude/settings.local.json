@@ -15,7 +15,8 @@
       "Bash(cd /Users/giovannitavella/Desktop/PersonalProject/cdk-proof/fe && npm install 2>&1)",
       "Bash(cd /Users/giovannitavella/Desktop/PersonalProject/cdk-proof/fe && npm install -D tailwindcss @tailwindcss/vite 2>&1)",
       "Bash(cd /Users/giovannitavella/Desktop/PersonalProject/cdk-proof/fe && npm install react-router-dom axios 2>&1)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(aws logs:*)"
     ]
   }
 }
