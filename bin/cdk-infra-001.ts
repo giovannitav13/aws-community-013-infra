@@ -10,6 +10,7 @@ import { ClusterStack } from '../lib/cluster-stack';
 import { ServicesStack } from '../lib/services-stack';
 import { FrontendStack } from '../lib/frontend-stack';
 import { AlbStack } from '../lib/alb-stack';
+import { GithubOidcStack } from '../lib/github-oidc-stack';
 
 const app = new cdk.App();
 
@@ -101,3 +102,17 @@ const frontend = new FrontendStack(app, `FrontendStack-${envName}`, {
   env: awsEnv,
 });
 frontend.addDependency(dns);
+
+const githubOidc = new GithubOidcStack(app, `GithubOidcStack-${envName}`, {
+  config,
+  frontendBucket: frontend.bucket,
+  distribution: frontend.distribution,
+  repoServiceA: ecr.repoServiceA,
+  repoServiceB: ecr.repoServiceB,
+  repoServiceC: ecr.repoServiceC,
+  cluster: cluster.cluster,
+  env: awsEnv,
+});
+githubOidc.addDependency(frontend);
+githubOidc.addDependency(ecr);
+githubOidc.addDependency(cluster);

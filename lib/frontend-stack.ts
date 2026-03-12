@@ -15,6 +15,9 @@ interface FrontendStackProps extends cdk.StackProps {
 }
 
 export class FrontendStack extends cdk.Stack {
+  public readonly bucket: s3.Bucket;
+  public readonly distribution: cloudfront.Distribution;
+
   constructor(scope: Construct, id: string, props: FrontendStackProps) {
     super(scope, id, props);
 
@@ -22,7 +25,7 @@ export class FrontendStack extends cdk.Stack {
     const frontendFqdn = `${frontendSubdomain}.${domain}`;
 
     // S3 bucket for static files
-    const bucket = new s3.Bucket(this, 'FrontendBucket', {
+    this.bucket = new s3.Bucket(this, 'FrontendBucket', {
       bucketName: `${frontendFqdn}-${env.toLowerCase()}`,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -30,13 +33,13 @@ export class FrontendStack extends cdk.Stack {
     });
 
     // CloudFront distribution
-    const distribution = new cloudfront.Distribution(this, 'Distribution', {
+    this.distribution = new cloudfront.Distribution(this, 'Distribution', {
       comment: `Frontend ${env}`,
       domainNames: [frontendFqdn],
       certificate: props.certificate,
       defaultRootObject: 'index.html',
       defaultBehavior: {
-        origin: origins.S3BucketOrigin.withOriginAccessControl(bucket),
+        origin: origins.S3BucketOrigin.withOriginAccessControl(this.bucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
       },
@@ -61,7 +64,7 @@ export class FrontendStack extends cdk.Stack {
       recordName: frontendFqdn,
       zone: props.hostedZone,
       target: route53.RecordTarget.fromAlias(
-        new targets.CloudFrontTarget(distribution),
+        new targets.CloudFrontTarget(this.distribution),
       ),
     });
 

@@ -80,6 +80,7 @@ export class ServicesStack extends cdk.Stack {
       desiredCount: 0,
       securityGroups: [props.servicesSecurityGroup],
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      healthCheckGracePeriod: cdk.Duration.seconds(120),
       serviceConnectConfiguration: {
         services: [
           {
@@ -198,6 +199,7 @@ export class ServicesStack extends cdk.Stack {
       desiredCount: 0,
       securityGroups: [props.servicesSecurityGroup],
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      healthCheckGracePeriod: cdk.Duration.seconds(120),
       serviceConnectConfiguration: {
         services: [
           {
@@ -220,7 +222,7 @@ export class ServicesStack extends cdk.Stack {
       targets: [serviceA],
       healthCheck: {
         path: '/api/service-a/ultimi-numeri',
-        healthyHttpCodes: '200',
+        healthyHttpCodes: '200-299',
         port: '8080',
       },
       priority: 10,
@@ -233,7 +235,7 @@ export class ServicesStack extends cdk.Stack {
       targets: [serviceC],
       healthCheck: {
         path: '/api/service-c/health',
-        healthyHttpCodes: '200',
+        healthyHttpCodes: '200-299',
         port: '8080',
       },
       priority: 20,

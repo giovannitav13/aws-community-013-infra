@@ -1,26 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx cdk:*)",
-      "Bash(mv prompt.md /tmp/prompt.md && npx cdk init app --language typescript 2>&1 && mv /tmp/prompt.md .)",
-      "Bash(npx tsc:*)",
-      "Bash(git add:*)",
-      "Bash(git push:*)",
-      "Bash(git commit:*)",
-      "Bash(aws cloudformation:*)",
-      "Bash(aws ecs:*)",
-      "Bash(curl -sk https://nuova-app-be.dev-tool.click/ 2>&1)",
-      "Bash(chmod +x /Users/giovannitavella/Desktop/PersonalProject/cdk-proof/microservice/localstack-init.sh)",
-      "Bash(cd /Users/giovannitavella/Desktop/PersonalProject/cdk-proof/fe && npm create vite@latest . -- --template react-ts 2>&1)",
-      "Bash(cd /Users/giovannitavella/Desktop/PersonalProject/cdk-proof/fe && npm install 2>&1)",
-      "Bash(cd /Users/giovannitavella/Desktop/PersonalProject/cdk-proof/fe && npm install -D tailwindcss @tailwindcss/vite 2>&1)",
-      "Bash(cd /Users/giovannitavella/Desktop/PersonalProject/cdk-proof/fe && npm install react-router-dom axios 2>&1)",
-      "Bash(npm run:*)",
-      "Bash(aws logs:*)",
-      "Bash(cd /Users/giovannitavella/Desktop/PersonalProject/cdk-proof/microservice/service-b && docker build --no-cache -t service-b . 2>&1)",
-      "Bash(docker tag:*)",
-      "Bash(kill 71403 2>/dev/null; sleep 2; npx cdk deploy ServicesStack-DEV --context env=DEV --require-approval never 2>&1)",
-      "Bash(aws secretsmanager:*)"
+      "Bash(*)",
+      "Write(*)",
+      "Edit(*)"
     ]
   }
 }
